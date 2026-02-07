@@ -35,6 +35,20 @@ registerSketch('sk5', function (p) {
     }
 
     // ------------------------
+    // Utility helpers
+    // ------------------------
+    function formatAMPM(decimalHour) {
+        decimalHour = decimalHour % 24;
+        let hh = Math.floor(decimalHour);
+        let mm = Math.floor((decimalHour - hh) * 60);
+        const ampm = hh >= 12 ? 'PM' : 'AM';
+        hh = hh % 12;
+        if (hh === 0) hh = 12;
+        return `${hh}:${p.nf(mm, 2)}${ampm}`;
+    }
+
+
+    // ------------------------
     // p5 lifecycle
     // ------------------------
     p.setup = function () {
@@ -132,12 +146,11 @@ registerSketch('sk5', function (p) {
         p.textSize(16);
         p.textAlign(p.LEFT, p.CENTER);
         p.text(
-            `Current time: ${p.nf(nowDecimal, 2, 3)}   Sunrise: ${formatHour(
-                sunrise
-            )}   Sunset: ${formatHour(sunset)}`,
+            `Current time: ${formatAMPM(nowDecimal)}   Sunrise: ${formatAMPM(sunrise)}   Sunset: ${formatAMPM(sunset)}`,
             18,
             18
         );
+
 
         p.textSize(12);
         p.text(
@@ -163,6 +176,7 @@ registerSketch('sk5', function (p) {
         const innerR = R - thickness / 2;
         const startAngle = -p.HALF_PI;
 
+        // background dial
         p.noFill();
         p.stroke(220);
         p.strokeWeight(thickness);
@@ -182,6 +196,37 @@ registerSketch('sk5', function (p) {
             );
         }
 
+        // ===== ticks & labels =====
+        p.stroke(40);
+        for (let k = 0; k < 12; k += 3) { // 每 3 小时一个刻度
+            const ang = p.lerp(startAngle, startAngle + p.TWO_PI, k / 12);
+            p.strokeWeight(2);
+            p.line(
+                p.cos(ang) * (R - 18),
+                p.sin(ang) * (R - 18),
+                p.cos(ang) * (R + 10),
+                p.sin(ang) * (R + 10)
+            );
+
+            p.noStroke();
+            p.fill(30);
+            p.textSize(14);
+            p.textAlign(p.CENTER, p.CENTER);
+            const labelHour = normalizeHour(baseHour + k);
+            let labelText;
+            if (labelHour === 0) labelText = '12AM';
+            else if (labelHour < 12) labelText = `${labelHour}AM`;
+            else if (labelHour === 12) labelText = '12PM';
+            else labelText = `${labelHour - 12}PM`;
+
+            p.text(
+                labelText,
+                p.cos(ang) * (R + 28),
+                p.sin(ang) * (R + 28)
+            );
+        }
+
+        // currrent time indicator
         const localHour = (nowDecimal - baseHour + 24) % 12;
         const ang = p.lerp(startAngle, startAngle + p.TWO_PI, localHour / 12);
         const x = p.cos(ang) * innerR;
@@ -191,6 +236,7 @@ registerSketch('sk5', function (p) {
             ? drawSun(x, y, 18)
             : drawMoon(x, y, 18);
     }
+
 
     // ------------------------
     // Time & color logic
