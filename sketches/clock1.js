@@ -10,6 +10,11 @@ registerSketch('sk5', function (p) {
     let sunriseSlider, sunsetSlider;
     let autoCheckbox, refreshButton;
 
+    // NEW: time control
+    let demoTimeSlider;
+    let useSystemTimeCheckbox;
+    let useSystemTime = true;
+
     let useAutoLocation = true;
     let computedSun = { sunrise: 7.0, sunset: 18.5 };
     let lastLocation = null;
@@ -62,9 +67,9 @@ registerSketch('sk5', function (p) {
                 if (useAutoLocation) requestLocationAndCompute();
             });
 
-        // --- Row 2: manual sliders ---
+        // --- Row 2: manual sunrise / sunset ---
         let p2 = p.createP('');
-        p2.style('margin', '4px 0 8px 0');
+        p2.style('margin', '4px 0 6px 0');
 
         p.createSpan('Sunrise time (24h): ').parent(p2);
         sunriseSlider = p.createSlider(0, 23.75, 7, 0.25).parent(p2);
@@ -75,6 +80,23 @@ registerSketch('sk5', function (p) {
         p.createSpan('Sunset time (24h): ').parent(p2);
         sunsetSlider = p.createSlider(0, 23.75, 18.5, 0.25).parent(p2);
         sunsetSlider.style('width', '220px');
+
+        // --- Row 3: current time control (NEW) ---
+        let p3 = p.createP('');
+        p3.style('margin', '4px 0 8px 0');
+
+        useSystemTimeCheckbox = p
+            .createCheckbox('Use system current time', true)
+            .parent(p3);
+
+        useSystemTimeCheckbox.changed(() => {
+            useSystemTime = useSystemTimeCheckbox.checked();
+        });
+
+        p.createSpan('    Demo time: ').parent(p3);
+        demoTimeSlider = p.createSlider(0, 24, 12.0, 0.01).parent(p3);
+        demoTimeSlider.style('width', '360px');
+        p.createSpan(' (hours, e.g. 13.5 = 13:30)').parent(p3);
 
         requestLocationAndCompute();
     };
@@ -92,9 +114,15 @@ registerSketch('sk5', function (p) {
             computedSun.sunset = sunset;
         }
 
-        const d = new Date();
-        const nowDecimal =
-            d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+        // NEW: adjustable current time
+        let nowDecimal;
+        if (useSystemTime) {
+            const d = new Date();
+            nowDecimal =
+                d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+        } else {
+            nowDecimal = demoTimeSlider.value();
+        }
 
         const isPM = nowDecimal >= 12;
         const base = isPM ? 12 : 0;
@@ -114,9 +142,7 @@ registerSketch('sk5', function (p) {
         p.textSize(12);
         p.text(
             lastLocation
-                ? `Location: ${lastLocation.lat.toFixed(
-                    4
-                )}, ${lastLocation.lng.toFixed(4)}`
+                ? `Location: ${lastLocation.lat.toFixed(4)}, ${lastLocation.lng.toFixed(4)}`
                 : 'Location: manual',
             18,
             40
@@ -127,7 +153,6 @@ registerSketch('sk5', function (p) {
         drawDial(base, sunrise, sunset, nowDecimal);
         p.pop();
     };
-
 
     // ------------------------
     // Drawing
@@ -204,10 +229,11 @@ registerSketch('sk5', function (p) {
         p.push();
         p.translate(x, y);
         p.noStroke();
-        p.fill(dayColor);
+        p.fill(255, 251, 202);
         p.ellipse(0, 0, r, r);
         p.pop();
     }
+
 
     function drawMoon(x, y, r) {
         p.push();
@@ -239,10 +265,7 @@ registerSketch('sk5', function (p) {
         });
     }
 
-    // NOAA sunrise/sunset calculation (unchanged)
     function computeSunriseSunset(date, lat, lng) {
-        /* same NOAA logic as your current version */
-        return { sunrise: 7.0, sunset: 18.5 }; // placeholder if needed
+        return { sunrise: 7.0, sunset: 18.5 };
     }
-
 });
