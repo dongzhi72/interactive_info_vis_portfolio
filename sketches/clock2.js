@@ -3,11 +3,12 @@ registerSketch('sk6', function (p) {
   // ----- TIMER STATE -----
   let isRunning = false;
   let startTime = 0;
-  let elapsedTime = 0; // milliseconds accumulated
+  let elapsedTime = 0;
 
   // ----- UI -----
   let startButton;
   let stopButton;
+  let resetButton;
 
   // ----- VISUAL CONFIG -----
   const bottleWidth = 80;
@@ -19,21 +20,22 @@ registerSketch('sk6', function (p) {
     p.createCanvas(p.windowWidth, p.windowHeight);
     p.textFont('Helvetica');
 
-    // Start button
     startButton = p.createButton('START');
     startButton.position(40, 80);
     startButton.mousePressed(startTimer);
 
-    // Stop button
     stopButton = p.createButton('STOP');
     stopButton.position(40, 130);
     stopButton.mousePressed(stopTimer);
+
+    resetButton = p.createButton('RESET');
+    resetButton.position(40, 180);
+    resetButton.mousePressed(resetTimer);
   };
 
   p.draw = function () {
     p.background(245);
 
-    updateTimer();
     drawBottles();
     drawElapsedTime();
   };
@@ -53,10 +55,10 @@ registerSketch('sk6', function (p) {
     }
   }
 
-  function updateTimer() {
-    if (isRunning) {
-      // do nothing here; time is calculated dynamically
-    }
+  function resetTimer() {
+    isRunning = false;
+    elapsedTime = 0;
+    startTime = 0;
   }
 
   function getTotalElapsed() {
@@ -71,30 +73,23 @@ registerSketch('sk6', function (p) {
     const totalMs = getTotalElapsed();
     const hours = totalMs / (1000 * 60 * 60);
 
-    const bottleCount = Math.floor(hours) + 1;
+    const bottleCount = Math.max(1, Math.floor(hours) + 1);
 
     for (let i = 0; i < bottleCount; i++) {
       const bottleX = 160 + i * (bottleWidth + bottleGap);
-
-      // how full is this bottle (0–1)
       let fillAmount = hours - i;
       fillAmount = p.constrain(fillAmount, 0, 1);
-
       drawBottle(bottleX, bottleTopY, fillAmount);
     }
   }
 
   function drawBottle(x, y, fillAmount) {
-    // bottle outline
     p.noFill();
     p.stroke(80);
     p.strokeWeight(2);
     p.rect(x, y, bottleWidth, bottleHeight, 10);
-
-    // bottle neck
     p.rect(x + 20, y - 20, bottleWidth - 40, 20, 5);
 
-    // water fill
     const fillHeight = bottleHeight * fillAmount;
     p.noStroke();
     p.fill(80, 120, 200);
