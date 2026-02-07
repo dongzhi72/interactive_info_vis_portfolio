@@ -1,5 +1,5 @@
 // Instance-mode sketch registered as 'colorSwitchClock'
-registerSketch('sk5', function (p) {
+registerSketch('sk16', function (p) {
 
 
  // ------------------------
