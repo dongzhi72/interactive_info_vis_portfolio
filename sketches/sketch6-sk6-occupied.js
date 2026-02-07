@@ -1,5 +1,5 @@
 // Example 2
-registerSketch('sk6', function (p) {
+registerSketch('sk17', function (p) {
   p.setup = function () {
     p.createCanvas(p.windowWidth, p.windowHeight);
     // clockFont = p.loadFont("digital-7.ttf");
