@@ -1,5 +1,5 @@
-// Instance-mode sketch registered as 'sk5'
-registerSketch('sk5', function (p) {
+// Instance-mode sketch registered as 'sk2'
+registerSketch('sk2', function (p) {
     // ------------------------
     // State & constants
     // ------------------------

@@ -1,5 +1,5 @@
-// Instance-mode sketch registered as 'sk6'
-registerSketch('sk6', function (p) {
+// Instance-mode sketch registered as 'sk3'
+registerSketch('sk3', function (p) {
   // ----- TIMER STATE -----
   let isRunning = false;
   let startTime = 0;

@@ -1,5 +1,5 @@
 // Instance-mode sketch for tab 3
-registerSketch('sk3', function (p) {
+registerSketch('sk16', function (p) {
   p.setup = function () {
     p.createCanvas(p.windowWidth, p.windowHeight);
   };
