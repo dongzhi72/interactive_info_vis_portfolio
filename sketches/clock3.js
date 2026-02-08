@@ -26,10 +26,11 @@ registerSketch('sk4', function (p) {
     const cy = p.height / 2 - 40;
 
     const rings = [
-      { r: 220, value: p.month() - 1, max: 12 },
-      { r: 180, value: p.day() - 1, max: daysInMonth() },
-      { r: 140, value: p.hour(), max: 24 },
-      { r: 100, value: p.minute(), max: 60 }
+      { r: 220, value: p.month() - 1, max: 12 },          // month
+      { r: 185, value: p.day() - 1, max: daysInMonth() }, // day
+      { r: 150, value: p.hour(), max: 24 },               // hour
+      { r: 115, value: p.minute(), max: 60 },             // minute
+      { r: 80,  value: p.second(), max: 60 }              // seconds (NEW)
     ];
 
     drawRings(cx, cy, rings);
@@ -73,7 +74,7 @@ registerSketch('sk4', function (p) {
 
   function drawRings(cx, cy, rings) {
     rings.forEach(ring => {
-      // ----- ring outline -----
+      // ring outline
       p.push();
       p.noFill();
       p.stroke(RING_STROKE_COLOR);
@@ -81,7 +82,7 @@ registerSketch('sk4', function (p) {
       p.ellipse(cx, cy, ring.r * 2);
       p.pop();
 
-      // ----- moving dot -----
+      // moving dot
       const angle = p.map(
         ring.value,
         0,
@@ -96,7 +97,7 @@ registerSketch('sk4', function (p) {
       p.push();
       p.noStroke();
       p.fill(DOT_FILL_COLOR);
-      p.ellipse(x, y, 10, 10);
+      p.ellipse(x, y, 8, 8);
       p.pop();
     });
   }
