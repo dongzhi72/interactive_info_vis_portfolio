@@ -30,11 +30,11 @@ registerSketch('sk4', function (p) {
     drawSeasonBackground(cx, cy, maxRadius);
 
     const rings = [
-      { r: 220, value: p.month() - 1, max: 12 },
-      { r: 185, value: p.day() - 1, max: daysInMonth() },
-      { r: 150, value: p.hour(), max: 24 },
-      { r: 115, value: p.minute(), max: 60 },
-      { r: 80,  value: p.second(), max: 60 }
+      { r: 220, value: p.month() - 1, max: 12 },          // month
+      { r: 185, value: p.day() - 1, max: daysInMonth() }, // day
+      { r: 150, value: p.hour(), max: 24 },               // hour
+      { r: 115, value: p.minute(), max: 60 },             // minute
+      { r: 80,  value: p.second(), max: 60 }              // seconds (NEW)
     ];
 
     drawRings(cx, cy, rings);
@@ -74,10 +74,12 @@ registerSketch('sk4', function (p) {
     const imgSize = 90;
     const radius = imgSize / 2;
 
+    // background circle
     p.noStroke();
     p.fill(255);
     p.ellipse(cx, cy, outerDiameter);
 
+    // clipped image
     p.push();
     p.translate(cx, cy);
 
@@ -94,6 +96,7 @@ registerSketch('sk4', function (p) {
     ctx.restore();
     p.pop();
 
+    // outline
     p.noFill();
     p.stroke(CENTER_STROKE_COLOR);
     p.strokeWeight(1);
@@ -102,6 +105,7 @@ registerSketch('sk4', function (p) {
 
   function drawRings(cx, cy, rings) {
     rings.forEach(ring => {
+      // ring outline
       p.push();
       p.noFill();
       p.stroke(RING_STROKE_COLOR);
@@ -109,6 +113,7 @@ registerSketch('sk4', function (p) {
       p.ellipse(cx, cy, ring.r * 2);
       p.pop();
 
+      // moving dot
       const angle = p.map(
         ring.value,
         0,
