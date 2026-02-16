@@ -22,7 +22,19 @@ registerSketch('sk5', function (p) {
 
   p.setup = function () {
     const host = document.getElementById(HOST_ID) || (function () {
-      const f = document.createElement('div'); f.id = HOST_ID; document.body.appendChild(f); return f; })();
+      const f = document.createElement('div');
+      f.id = HOST_ID;
+      document.body.appendChild(f);
+      return f;
+    })();
+
+    // ⭐ 新增：让整个可视化居中 + 限制宽度
+    host.style.maxWidth = '750px';   // 控制整体宽度（适合社媒截图）
+    host.style.margin = '40px auto'; // 水平居中
+    host.style.padding = '10px 20px';
+    host.style.background = '#ffffff';
+    host.style.boxShadow = '0 6px 20px rgba(0,0,0,0.08)';
+    host.style.borderRadius = '12px';
 
     // build DOM: title above, wrapper (map + legend) below, source under wrapper
     // Title
@@ -53,9 +65,8 @@ registerSketch('sk5', function (p) {
       mapDiv = document.createElement('div');
       mapDiv.id = MAP_DIV_ID;
       mapDiv.style.position = 'relative';
-      mapDiv.style.flex = '1 1 600px';
-      mapDiv.style.minWidth = '400px';
-      mapDiv.style.height = '480px';
+      mapDiv.style.flex = '0 0 650px'; // ⭐ 控制地图宽度
+      mapDiv.style.height = '420px';
       wrapper.appendChild(mapDiv);
     } else if (!mapDiv.parentElement || mapDiv.parentElement.id !== wrapper.id) {
       wrapper.appendChild(mapDiv);
@@ -66,8 +77,8 @@ registerSketch('sk5', function (p) {
     if (!legend) {
       legend = document.createElement('div');
       legend.id = HOST_ID + '-legend';
-      legend.style.width = '180px';
-      legend.style.flex = '0 0 180px';
+      legend.style.width = '100px';
+      legend.style.flex = '0 0 100px';
       legend.style.fontFamily = 'system-ui, Arial';
       legend.style.fontSize = '13px';
       legend.style.color = '#222';
@@ -125,6 +136,31 @@ registerSketch('sk5', function (p) {
 
     p.noLoop();
     p.redraw();
+
+    // ⭐ 新增：鼠标移动时触发重绘（实现 hover）
+    p.mouseMoved = function () {
+      p.redraw();
+    };
+
+    p.mouseOut = function () {
+      hovered = null;
+      p.redraw();
+    };
+
+
+    let source = document.getElementById(HOST_ID + '-source');
+    if (!source) {
+      source = document.createElement('div');
+      source.id = HOST_ID + '-source';
+      source.style.marginTop = '8px';
+      source.style.fontSize = '11px';
+      source.style.color = '#666';
+      source.style.textAlign = 'center';
+      source.innerHTML =
+        'Data Source: National Oceanic and Atmospheric Administration (NOAA)';
+      host.appendChild(source);
+    }
+
   };
 
   function parseData() {
