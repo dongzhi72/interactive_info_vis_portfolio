@@ -195,7 +195,10 @@ registerSketch('sk5', function (p) {
         location: r.get('Location Name'),
         country: r.get('Country'),  // ⭐ 直接存储 Country
         year: parseInt(r.get('Year')),
-        time: r.get('Event DateTime') || r.get('Event DateTime')
+        time: r.get('Event DateTime') || r.get('Event DateTime'),
+        damage: r.get('Damage ($Mil)'),
+        depth: r.get('Focal Depth (km)'),
+        injuries: r.get('Injuries')
       });
     }
   }
@@ -287,7 +290,10 @@ registerSketch('sk5', function (p) {
     const txt = `${hovered.location}
     ${hovered.time}
     Magnitude: ${hovered.mag}
-    Deaths: ${hovered.deaths.toLocaleString()}`;
+    Focal Depth: ${hovered.depth} km
+    Deaths: ${hovered.deaths.toLocaleString()}
+    Damage ($Mil): $${hovered.damage}M
+    Injuries: ${hovered.injuries}`;
 
     // 背景框
     p.fill(255);
