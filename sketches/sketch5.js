@@ -10,6 +10,7 @@ registerSketch('sk5', function (p) {
   let points = [];
   let hovered = null;
   let mapDiv, leafletMap;
+  let barDiv;
 
   const MAP_OPTIONS = {
     center: [20, 0],
@@ -29,7 +30,7 @@ registerSketch('sk5', function (p) {
     })();
 
     // ⭐ 新增：让整个可视化居中 + 限制宽度
-    host.style.maxWidth = '750px';   // 控制整体宽度（适合社媒截图）
+    host.style.maxWidth = '730px';   // 控制整体宽度（适合社媒截图）
     host.style.margin = '40px auto'; // 水平居中
     host.style.padding = '10px 20px';
     host.style.background = '#ffffff';
@@ -45,10 +46,10 @@ registerSketch('sk5', function (p) {
       titleEl.style.marginBottom = '8px';
       titleEl.style.textAlign = 'center';
       titleEl.innerHTML = `
-      <h3 style="margin:6px 0; font-size: 32px;">
+      <h2 style="margin:4px 0; font-size: 35px;">
         10 Deadliest Earthquakes in the 21st Century
-      </h3>
-      <div style="color:#555; font-size: 16px; line-height: 1.5;">
+      </h2>
+      <div style="color:#555; font-size: 13px; line-height: 1.2;">
         These 10 earthquakes took a collective death toll of over 610,000 people. <br>
         Nine of them took place in Asia, while the most devastating one struck the Caribbean.
       </div>
@@ -72,8 +73,8 @@ registerSketch('sk5', function (p) {
       mapDiv = document.createElement('div');
       mapDiv.id = MAP_DIV_ID;
       mapDiv.style.position = 'relative';
-      mapDiv.style.flex = '0 0 650px'; // ⭐ 控制地图宽度
-      mapDiv.style.height = '420px';
+      mapDiv.style.flex = '0 0 620px'; // ⭐ 控制地图宽度
+      mapDiv.style.height = '400px';
       wrapper.appendChild(mapDiv);
     } else if (!mapDiv.parentElement || mapDiv.parentElement.id !== wrapper.id) {
       wrapper.appendChild(mapDiv);
@@ -134,7 +135,20 @@ registerSketch('sk5', function (p) {
     cnv.style('pointer-events', 'auto');
     cnv.style('z-index', '400');
 
+    // ⭐ 新增：bar chart 容器（在 source 上方）
+    barDiv = document.getElementById(HOST_ID + '-bars');
+    if (!barDiv) {
+      barDiv = document.createElement('div');
+      barDiv.id = HOST_ID + '-bars';
+      barDiv.style.marginTop = '14px';
+      barDiv.style.padding = '8px 10px 2px 10px';
+      barDiv.style.fontFamily = 'system-ui, Arial';
+      host.appendChild(barDiv);
+    }
+
     parseData();
+    computeRanks();
+    drawBarChart(barDiv);
 
     // redraw when the map moves or zooms
     if (leafletMap) {
@@ -186,6 +200,14 @@ registerSketch('sk5', function (p) {
     }
   }
 
+  function computeRanks() {
+    const sorted = [...points].sort((a, b) => b.deaths - a.deaths);
+    sorted.forEach((pt, i) => {
+      pt.rank = i + 1;
+    });
+  }
+
+
   function magColor(m) {
     return p.lerpColor(
       p.color('#ffe66d'),
@@ -225,7 +247,7 @@ registerSketch('sk5', function (p) {
     if (!leafletMap) return;
 
     p.textAlign(p.LEFT, p.CENTER);
-    p.textSize(9); // ⭐ 标签字号（可调大一点）
+    p.textSize(14); // ⭐ 标签字号（可调大一点）
     p.fill(30);     // 深灰色文字更柔和
 
     for (let pt of points) {
@@ -238,8 +260,8 @@ registerSketch('sk5', function (p) {
       p.fill(magColor(pt.mag));
       p.circle(pos.x, pos.y, s);
 
-      // ⭐ 标签文本（Country + Year）
-      const label = `${pt.country}, ${pt.year}`;
+      // ⭐ 标签文本（标号）
+      const label = `#${pt.rank}`;
 
       // 标签位置（右上角偏移）
       p.fill(20);
@@ -322,5 +344,48 @@ registerSketch('sk5', function (p) {
     p.textSize(10);
     p.text('Data Source: National Oceanic and Atmospheric Administration (NOAA)', p.width / 2, p.height - 8);
   }
+
+  function drawBarChart(container) {
+    if (!points || points.length === 0) return;
+
+    // 按死亡人数排序（从大到小）
+    const sorted = [...points].sort((a, b) => b.deaths - a.deaths);
+
+    const maxDeaths = Math.max(...sorted.map(d => d.deaths));
+    const barMaxWidth = 340; // 控制最长条宽度
+
+    let html = `
+    <div style="display:flex;align-items:center; margin-top:0px; margin-bottom:4px;
+                font-weight:normal;border-bottom:1px solid #ddd;padding-bottom:2px">
+      <div style="width:26px">#</div>
+      <div style="width:48px">Year</div>
+      <div style="flex:1">Location (Magnitude)</div>
+      <div style="width:70px;text-align:right">Deaths</div>
+    </div>
+    `;
+
+    for (let i = 0; i < sorted.length; i++) {
+      const d = sorted[i];
+      const w = (d.deaths / maxDeaths) * barMaxWidth;
+
+      html += `
+      <div style="display:flex;align-items:center;margin:4px 0;font-size:14px">
+        <div style="width:26px;color:#b10000;font-weight:600">${i + 1}</div>
+        <div style="width:48px;color:#333">${d.year}</div>
+        <div style="flex:1;color:#333">
+          ${d.location}
+          <span style="color:#777;font-size:13px"> (M${d.mag})</span>
+        </div>
+        <div style="height:14px;width:${w}px;background:#b10000;margin:0 10px;border-radius:3px"></div>
+        <div style="width:70px;text-align:right;color:#222">
+          ${d.deaths.toLocaleString()}
+        </div>
+      </div>
+    `;
+    }
+
+    container.innerHTML = html;
+  }
+
 
 });
