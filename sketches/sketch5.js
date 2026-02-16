@@ -44,8 +44,15 @@ registerSketch('sk5', function (p) {
       titleEl.id = HOST_ID + '-title';
       titleEl.style.marginBottom = '8px';
       titleEl.style.textAlign = 'center';
-      titleEl.innerHTML = '<h3 style="margin:6px 0">10 Deadliest Earthquakes in the 21st Century</h3>' +
-        '<div style="color:#555;font-size:13px">The 10 deadliest earthquakes in the 21st century took a collective death toll of over 610,000 people.</div>';
+      titleEl.innerHTML = `
+      <h3 style="margin:6px 0; font-size: 32px;">
+        10 Deadliest Earthquakes in the 21st Century
+      </h3>
+      <div style="color:#555; font-size: 16px; line-height: 1.5;">
+        These 10 earthquakes took a collective death toll of over 610,000 people. <br>
+        Nine of them took place in Asia, while the most devastating one struck the Caribbean.
+      </div>
+      `;
       host.appendChild(titleEl);
     }
 
@@ -168,10 +175,12 @@ registerSketch('sk5', function (p) {
     for (let r of table.rows) {
       points.push({
         lat: parseFloat(r.get('Latitude')),
-        lon: parseFloat(r.get('Longitude')) || parseFloat(r.get('Altitude')),
+        lon: parseFloat(r.get('Longitude')),
         deaths: +r.get('Deaths'),
         mag: +r.get('Mag'),
         location: r.get('Location Name'),
+        country: r.get('Country'),  // ⭐ 直接存储 Country
+        year: parseInt(r.get('Year')),
         time: r.get('Event DateTime') || r.get('Event DateTime')
       });
     }
@@ -215,36 +224,65 @@ registerSketch('sk5', function (p) {
   function drawPoints() {
     if (!leafletMap) return;
 
+    p.textAlign(p.LEFT, p.CENTER);
+    p.textSize(9); // ⭐ 标签字号（可调大一点）
+    p.fill(30);     // 深灰色文字更柔和
+
     for (let pt of points) {
       const latlng = L.latLng(pt.lat, pt.lon);
       const pos = leafletMap.latLngToContainerPoint(latlng);
       const s = deathSize(pt.deaths);
 
+      // draw circle
       p.noStroke();
       p.fill(magColor(pt.mag));
       p.circle(pos.x, pos.y, s);
 
-      if (p.dist(p.mouseX, p.mouseY, pos.x, pos.y) < s / 2) {
+      // ⭐ 标签文本（Country + Year）
+      const label = `${pt.country}, ${pt.year}`;
+
+      // 标签位置（右上角偏移）
+      p.fill(20);
+      p.text(label, pos.x + s / 2 + 4, pos.y - s / 2 - 2);
+
+      // hover detection
+      if (p.dist(p.mouseX, p.mouseY, pos.x, pos.y) < s / 2 + 2) {
         hovered = pt;
       }
     }
   }
 
+
   function drawTooltip() {
     if (!hovered) return;
 
-    const txt = `${hovered.location}\n${hovered.time}\nMagnitude: ${hovered.mag}\nDeaths: ${hovered.deaths.toLocaleString()}`;
+    const padding = 10;
+    const boxX = p.mouseX + 12;
+    const boxY = p.mouseY + 12;
+    const boxW = 230;
+    const boxH = 90;
 
+    const txt = `${hovered.location}
+    ${hovered.time}
+    Magnitude: ${hovered.mag}
+    Deaths: ${hovered.deaths.toLocaleString()}`;
+
+    // 背景框
     p.fill(255);
     p.stroke(0);
-    p.rect(p.mouseX + 12, p.mouseY + 12, 230, 90, 6);
+    p.rect(boxX, boxY, boxW, boxH, 6);
 
+    // 文本设置
     p.noStroke();
     p.fill(0);
-    p.textAlign(p.LEFT);
+    p.textAlign(p.LEFT, p.TOP);     // ⭐ 关键：改为 TOP 对齐
     p.textSize(12);
-    p.text(txt, p.mouseX + 18, p.mouseY + 28);
+    p.textLeading(16);              // ⭐ 控制行距
+
+    // 从 padding 内开始画
+    p.text(txt, boxX + padding, boxY + padding);
   }
+
 
   function drawLegends() {
     const x = p.width - 140;
